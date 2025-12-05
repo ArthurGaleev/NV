@@ -3,7 +3,9 @@ import random
 from typing import List
 
 import torch
+import torchaudio
 from torch.utils.data import Dataset
+from src.transforms.mel_spectrogram import MelSpectrogram, MelSpectrogramConfig
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,8 @@ class BaseDataset(Dataset):
         index = self._shuffle_and_limit_index(index, limit, shuffle_index)
         self._index: List[dict] = index
 
+        self.get_mel_spectrogram = MelSpectrogram(MelSpectrogramConfig)
+
         self.instance_transforms = instance_transforms
 
     def __getitem__(self, ind):
@@ -55,12 +59,19 @@ class BaseDataset(Dataset):
             instance_data (dict): dict, containing instance
                 (a single dataset element).
         """
-        data_dict = self._index[ind]
-        data_path = data_dict["path"]
-        data_object = self.load_object(data_path)
-        data_label = data_dict["label"]
 
-        instance_data = {"data_object": data_object, "labels": data_label}
+        data_dict = self._index[ind]
+        audio_path = data_dict["path"]
+        audio = self.load_audio(audio_path)
+
+        spectrogram = self.get_mel_spectrogram(audio)
+
+        instance_data = {
+            "audio": audio,
+            "mel_spectrogram": spectrogram,
+            "audio_path": audio_path,
+        }
+
         instance_data = self.preprocess_data(instance_data)
 
         return instance_data
@@ -72,16 +83,8 @@ class BaseDataset(Dataset):
         return len(self._index)
 
     def load_object(self, path):
-        """
-        Load object from disk.
-
-        Args:
-            path (str): path to the object.
-        Returns:
-            data_object (Tensor):
-        """
-        data_object = torch.load(path)
-        return data_object
+        audio_tensor, sr = torchaudio.load(path)
+        return audio_tensor
 
     def preprocess_data(self, instance_data):
         """
@@ -139,12 +142,8 @@ class BaseDataset(Dataset):
                 such as label and object path.
         """
         for entry in index:
-            assert "path" in entry, (
-                "Each dataset item should include field 'path'" " - path to audio file."
-            )
-            assert "label" in entry, (
-                "Each dataset item should include field 'label'"
-                " - object ground-truth label."
+            assert "audio_path" in entry, (
+                "Each dataset item should include field 'audio_path'" " - path to audio file."
             )
 
     @staticmethod
