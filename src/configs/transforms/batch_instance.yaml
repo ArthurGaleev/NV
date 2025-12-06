@@ -1,0 +1,4 @@
+defaults:
+  - batch_transforms: normalize
+  - instance_transforms: random_scale
+  - _self_
