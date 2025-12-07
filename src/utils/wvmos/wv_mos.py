@@ -131,23 +131,3 @@ class Wav2Vec2MOS(nn.Module):
             res = self.forward(x).mean()
         return res.cpu().item()
     
-    def get_mos_score_batch(self, signals: torch.Tensor) -> float:
-        """
-        Calculate mean mos score over audio batch by fine-tuned wav2vec2.0 model from https://huggingface.co/facebook/wav2vec2-base
-
-        Args:
-            signals (Tensor): 16Khz audio batch for calculating the mos score.
-        Returns:
-            output (float): calculated mean mos score over batch.
-        """
-        pred_mos = []
-        for i in range(signals.shape[0]):
-            signal = torchaudio.functional.resample(signals[i], MelSpectrogramConfig.sr, 16000)
-            x = self.processor(signal, return_tensors="pt", padding=True, sampling_rate=16000).input_values
-            if self.cuda_flag:
-                x = x.cuda()
-            with torch.no_grad():
-                res = self.forward(x).mean()
-            pred_mos.append(res.item())
-        return np.mean(pred_mos)
-    
