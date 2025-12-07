@@ -1,8 +1,8 @@
 _target_: src.logger.WandBWriter
-project_name: "pytorch_template"
+project_name: "neural_vocoder"
 entity: null
-run_name: "testing"
+run_name: "HiFi-GAN-v2"
 mode: "online"
-loss_names: ["loss"] # which losses to log (useful for multi-loss tasks, s.a. GANs)
+loss_names: ["loss_g", "loss_d", "loss_gan_g", "loss_mel_spec_g", "loss_ftr_match_g"] # which losses to log (useful for multi-loss tasks, s.a. GANs)
 log_checkpoints: False # set to True if you want to log save_dir with checkpoints to W&B
 id_length: 8 # length of the run_id

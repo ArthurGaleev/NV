@@ -1,5 +1,8 @@
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
+import torch
+from src.logger.utils import plot_spectrogram
+from src.transforms.mel_spectrogram import MelSpectrogramConfig
 
 
 class Trainer(BaseTrainer):
@@ -26,26 +29,54 @@ class Trainer(BaseTrainer):
                 the dataloader (possibly transformed via batch transform),
                 model outputs, and losses.
         """
+
         batch = self.move_batch_to_device(batch)
         batch = self.transform_batch(batch)  # transform batch on device -- faster
 
         metric_funcs = self.metrics["inference"]
         if self.is_train:
             metric_funcs = self.metrics["train"]
-            self.optimizer.zero_grad()
 
-        outputs = self.model(**batch)
+        # Generator stage
+        outputs = self.model(batch['audio'], batch['mel_spectrogram'], first_stage=None)
         batch.update(outputs)
 
-        all_losses = self.criterion(**batch)
-        batch.update(all_losses)
+        # Fix Generator, update Discriminator stage
+        if self.is_train:
+            self.optimizer_d.zero_grad()
+        outputs = self.model(batch['audio'], batch['mel_spectrogram'], 
+                             first_stage=True, audio_fake=batch['audio_fake'])
+        batch.update(outputs)
+
+        losses_d = self.criterion_d(**batch)
+        batch.update(losses_d)
 
         if self.is_train:
-            batch["loss"].backward()  # sum of all losses is always called loss
+            batch["loss_d"].backward()
             self._clip_grad_norm()
-            self.optimizer.step()
-            if self.lr_scheduler is not None:
-                self.lr_scheduler.step()
+            self.optimizer_d.step()
+
+        # Update Generator stage
+        if self.is_train:
+            self.optimizer_g.zero_grad()
+        outputs = self.model(batch['audio'], batch['mel_spectrogram'], 
+                             first_stage=False, audio_fake=batch['audio_fake'])
+        batch.update(outputs)
+
+        losses_g = self.criterion_g(**batch)
+        batch.update(losses_g)
+
+        if self.is_train:
+            batch["loss"].backward()
+            self._clip_grad_norm()
+            self.optimizer_g.step()
+
+        
+        if self.is_train:
+            if self.lr_scheduler_d is not None:
+                self.lr_scheduler_d.step()
+            if self.lr_scheduler_g is not None:
+                self.lr_scheduler_g.step()
 
         # update metrics for each loss (in case of multiple losses)
         for loss_name in self.config.writer.loss_names:
@@ -75,5 +106,16 @@ class Trainer(BaseTrainer):
             # Log Stuff
             pass
         else:
-            # Log Stuff
-            pass
+            self.log_spectrogram(
+                batch["mel_spectrogram_fake"],
+                spectrogram_name="mel_spectrogram_gen",
+            )
+            self.log_audio(batch["audio_fake"], audio_name="audio_gen")
+
+    def log_spectrogram(self, spectrogram, spectrogram_name="mel_spectrogram"):
+        spectrogram_for_plot = spectrogram[0].detach().cpu()
+        image = plot_spectrogram(spectrogram_for_plot, self.config)
+        self.writer.add_image(spectrogram_name, image)
+    def log_audio(self, audio, audio_name="audio"):
+        audio = audio[0].detach().cpu()
+        self.writer.add_audio(audio_name, audio, sample_rate=MelSpectrogramConfig.sr)

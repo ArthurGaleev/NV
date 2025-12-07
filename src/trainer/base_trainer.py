@@ -18,10 +18,13 @@ class BaseTrainer:
     def __init__(
         self,
         model,
-        criterion,
+        criterion_d,
+        criterion_g,
         metrics,
-        optimizer,
-        lr_scheduler,
+        optimizer_d,
+        optimizer_g,
+        lr_scheduler_d,
+        lr_scheduler_g,
         config,
         device,
         dataloaders,
@@ -29,7 +32,7 @@ class BaseTrainer:
         writer,
         epoch_len=None,
         skip_oom=True,
-        batch_transforms=None,
+        batch_transforms=None
     ):
         """
         Args:
@@ -67,9 +70,12 @@ class BaseTrainer:
         self.log_step = config.trainer.get("log_step", 50)
 
         self.model = model
-        self.criterion = criterion
-        self.optimizer = optimizer
-        self.lr_scheduler = lr_scheduler
+        self.criterion_d = criterion_d
+        self.criterion_g = criterion_g
+        self.optimizer_d = optimizer_d
+        self.optimizer_g = optimizer_g
+        self.lr_scheduler_d = lr_scheduler_d
+        self.lr_scheduler_g = lr_scheduler_g
         self.batch_transforms = batch_transforms
 
         # define dataloaders
