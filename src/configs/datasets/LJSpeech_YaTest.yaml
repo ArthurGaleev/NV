@@ -3,6 +3,6 @@ train:
   audio_len: 8192  # cropped audio length
   sample_rate: 22050
 
-val:
+test:
   _target_: src.datasets.YandexDownloadDataset
  
