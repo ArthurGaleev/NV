@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple, Union
 import torch
 import torch.nn.functional as F
 from torch import nn
+from torch.nn.utils.parametrizations import weight_norm, spectral_norm
 
 from src.transforms.mel_spectrogram import MelSpectrogram, MelSpectrogramConfig
 
@@ -101,24 +102,23 @@ class Generator(nn.Module):
 
 
 class SubMPD(nn.Module):
-    def __init__(self, period: int):
+    def __init__(self, period: int, norm_func: nn.Module = weight_norm):
         super().__init__()
         self.period = period
-        norm_f = nn.utils.parametrizations.weight_norm
 
         # 5x1 Convs
         self.convs = nn.ModuleList(
             [
-                norm_f(nn.Conv2d(1, 64, kernel_size=(5, 1), stride=(3, 1))),
-                norm_f(nn.Conv2d(64, 128, kernel_size=(5, 1), stride=(3, 1))),
-                norm_f(nn.Conv2d(128, 256, kernel_size=(5, 1), stride=(3, 1))),
-                norm_f(nn.Conv2d(256, 512, kernel_size=(5, 1), stride=(3, 1))),
-                norm_f(nn.Conv2d(512, 1024, kernel_size=(5, 1), stride=1)),
+                norm_func(nn.Conv2d(1, 64, kernel_size=(5, 1), stride=(3, 1))),
+                norm_func(nn.Conv2d(64, 128, kernel_size=(5, 1), stride=(3, 1))),
+                norm_func(nn.Conv2d(128, 256, kernel_size=(5, 1), stride=(3, 1))),
+                norm_func(nn.Conv2d(256, 512, kernel_size=(5, 1), stride=(3, 1))),
+                norm_func(nn.Conv2d(512, 1024, kernel_size=(5, 1), stride=1)),
             ]
         )
 
         # 3x1 Conv
-        self.conv_end = norm_f(nn.Conv2d(1024, 1, kernel_size=(3, 1), stride=1))
+        self.conv_end = norm_func(nn.Conv2d(1024, 1, kernel_size=(3, 1), stride=1))
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, List[torch.Tensor]]:
         # pad and reshape
@@ -165,50 +165,45 @@ class MPD(nn.Module):
 
 
 class SubMSD(nn.Module):
-    def __init__(self, use_spectral_norm: bool = False):
+    def __init__(self, norm_func: nn.Module = weight_norm):
         super().__init__()
-        norm_f = (
-            nn.utils.parametrizations.weight_norm
-            if use_spectral_norm == False
-            else nn.utils.parametrizations.spectral_norm
-        )
 
         # 15x1 Conv + 41x1 Convs + 5x1 Conv from MelGAN paper https://arxiv.org/abs/1910.06711
         # with increased layers amount and decreased stride as  mentioned in HiFi-GAN paper
         # padding = (kernel_size - 1) // 2
         self.convs = nn.ModuleList(
             [
-                norm_f(nn.Conv1d(1, 16, kernel_size=15, stride=1, padding=7)),
-                norm_f(
+                norm_func(nn.Conv1d(1, 16, kernel_size=15, stride=1, padding=7)),
+                norm_func(
                     nn.Conv1d(16, 32, kernel_size=41, stride=2, groups=4, padding=20)
                 ),
-                norm_f(
+                norm_func(
                     nn.Conv1d(32, 64, kernel_size=41, stride=2, groups=8, padding=20)
                 ),
-                norm_f(
+                norm_func(
                     nn.Conv1d(64, 128, kernel_size=41, stride=2, groups=16, padding=20)
                 ),
-                norm_f(
+                norm_func(
                     nn.Conv1d(128, 256, kernel_size=41, stride=2, groups=32, padding=20)
                 ),
-                norm_f(
+                norm_func(
                     nn.Conv1d(256, 512, kernel_size=41, stride=2, groups=64, padding=20)
                 ),
-                norm_f(
+                norm_func(
                     nn.Conv1d(
                         512, 1024, kernel_size=41, stride=2, groups=128, padding=20
                     )
                 ),
-                norm_f(
+                norm_func(
                     nn.Conv1d(
                         1024, 1024, kernel_size=41, stride=2, groups=256, padding=20
                     )
                 ),
-                norm_f(nn.Conv1d(1024, 1024, kernel_size=5, stride=1, padding=2)),
+                norm_func(nn.Conv1d(1024, 1024, kernel_size=5, stride=1, padding=2)),
             ]
         )
 
-        self.conv_end = norm_f(nn.Conv1d(1024, 1, kernel_size=3, stride=1, padding=1))
+        self.conv_end = norm_func(nn.Conv1d(1024, 1, kernel_size=3, stride=1, padding=1))
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, List[torch.Tensor]]:
         layer_features = []
@@ -228,7 +223,7 @@ class MSD(nn.Module):
         super().__init__()
         self.discriminators = nn.ModuleList(
             [
-                SubMSD(use_spectral_norm=True),
+                SubMSD(norm_func=spectral_norm),
                 SubMSD(),
                 SubMSD(),
             ]
