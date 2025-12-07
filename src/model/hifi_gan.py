@@ -37,7 +37,7 @@ class Resblock1(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         for conv_block in self.conv_blocks:
-            x += conv_block(x)
+            x = x + conv_block(x)
         return x
 
 
