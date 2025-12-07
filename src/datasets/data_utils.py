@@ -4,6 +4,8 @@ from hydra.utils import instantiate
 
 from src.datasets.collate import collate_fn
 from src.utils.init_utils import set_worker_seed
+import os
+import warnings
 
 
 def inf_loop(dataloader):
@@ -66,6 +68,12 @@ def get_dataloaders(config, device):
     dataloaders = {}
     for dataset_partition in config.datasets.keys():
         if config.datasets[dataset_partition] is None:
+            continue
+        if dataset_partition == "val" and os.getenv("YANDEX_DISK_URL") == None:
+            warnings.warn(
+                "Skipping val dataset, because YANDEX_DISK_URL env variable is not set", 
+                RuntimeWarning
+            )
             continue
 
         dataset = instantiate(config.datasets[dataset_partition])

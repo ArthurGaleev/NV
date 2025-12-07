@@ -1,1 +1,3 @@
-from src.datasets.example import ExampleDataset
+from src.datasets.LJSpeech_dataset import LJSpeechDataset
+from src.datasets.YandexDownload_dataset import YandexDownloadDataset
+from src.datasets.CustomDir_dataset import CustomDirDataset
