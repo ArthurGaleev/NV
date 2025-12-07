@@ -45,7 +45,7 @@ class Trainer(BaseTrainer):
         if self.is_train:
             self.optimizer_d.zero_grad()
         outputs = self.model(batch['audio'], batch['mel_spectrogram'], 
-                             first_stage=True, audio_fake=batch['audio_fake'])
+                             first_stage=True, audio_fake=batch['audio_fake'].detach())
         batch.update(outputs)
 
         losses_d = self.criterion_d(**batch)
@@ -55,6 +55,8 @@ class Trainer(BaseTrainer):
             batch["loss_d"].backward()
             self._clip_grad_norm()
             self.optimizer_d.step()
+            if self.lr_scheduler_d is not None:
+                self.lr_scheduler_d.step()
 
         # Update Generator stage
         if self.is_train:
@@ -70,11 +72,6 @@ class Trainer(BaseTrainer):
             batch["loss"].backward()
             self._clip_grad_norm()
             self.optimizer_g.step()
-
-        
-        if self.is_train:
-            if self.lr_scheduler_d is not None:
-                self.lr_scheduler_d.step()
             if self.lr_scheduler_g is not None:
                 self.lr_scheduler_g.step()
 

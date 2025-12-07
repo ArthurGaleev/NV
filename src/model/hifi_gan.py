@@ -332,12 +332,12 @@ class HiFiGAN(nn.Module):
 
             # MPD
             x_mpd_real, ftrs_mpd_real, x_mpd_fake, ftrs_mpd_fake = self.mpd(
-                audio_real, audio_fake.detach()
+                audio_real, audio_fake
             )
 
             # MPD
             x_msd_real, ftrs_msd_real, x_msd_fake, ftrs_msd_fake = self.msd(
-                audio_real, audio_fake.detach()
+                audio_real, audio_fake
             )
 
             return {
