@@ -472,9 +472,13 @@ class BaseTrainer:
         state = {
             "arch": arch,
             "epoch": epoch,
-            "state_dict": self.model.state_dict(),
-            "optimizer": self.optimizer.state_dict(),
-            "lr_scheduler": self.lr_scheduler.state_dict(),
+            "state_dict_mpd": self.model.mpd.state_dict(),
+            "state_dict_msd": self.model.msd.state_dict(),
+            "state_dict_generator": self.model.generator.state_dict(),
+            "optimizer_d": self.optimizer_d.state_dict(),
+            "optimizer_g": self.optimizer_g.state_dict(),
+            "lr_scheduler_d": self.lr_scheduler_d.state_dict(),
+            "lr_scheduler_g": self.lr_scheduler_g.state_dict(),
             "monitor_best": self.mnt_best,
             "config": self.config,
         }
@@ -515,12 +519,16 @@ class BaseTrainer:
                 "Warning: Architecture configuration given in the config file is different from that "
                 "of the checkpoint. This may yield an exception when state_dict is loaded."
             )
-        self.model.load_state_dict(checkpoint["state_dict"])
+        self.model.mpd.load_state_dict(checkpoint["state_dict_mpd"])
+        self.model.msd.load_state_dict(checkpoint["state_dict_msd"])
+        self.model.generator.load_state_dict(checkpoint["state_dict_generator"])
 
         # load optimizer state from checkpoint only when optimizer type is not changed.
         if (
-            checkpoint["config"]["optimizer"] != self.config["optimizer"]
-            or checkpoint["config"]["lr_scheduler"] != self.config["lr_scheduler"]
+            checkpoint["config"]["optimizer_d"] != self.config["optimizer_d"]
+            or checkpoint["config"]["optimizer_g"] != self.config["optimizer_g"]
+            or checkpoint["config"]["lr_scheduler_d"] != self.config["lr_scheduler_d"]
+            or checkpoint["config"]["lr_scheduler_g"] != self.config["lr_scheduler_g"]
         ):
             self.logger.warning(
                 "Warning: Optimizer or lr_scheduler given in the config file is different "
@@ -528,8 +536,10 @@ class BaseTrainer:
                 "are not resumed."
             )
         else:
-            self.optimizer.load_state_dict(checkpoint["optimizer"])
-            self.lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
+            self.optimizer_d.load_state_dict(checkpoint["optimizer_d"])
+            self.optimizer_g.load_state_dict(checkpoint["optimizer_g"])
+            self.lr_scheduler_d.load_state_dict(checkpoint["lr_scheduler_d"])
+            self.lr_scheduler_g.load_state_dict(checkpoint["lr_scheduler_g"])
 
         self.logger.info(
             f"Checkpoint loaded. Resume training from epoch {self.start_epoch}"
@@ -553,7 +563,13 @@ class BaseTrainer:
             print(f"Loading model weights from: {pretrained_path} ...")
         checkpoint = torch.load(pretrained_path, self.device)
 
-        if checkpoint.get("state_dict") is not None:
-            self.model.load_state_dict(checkpoint["state_dict"])
+        if (
+            checkpoint.get("state_dict_mpd") is not None
+            and checkpoint.get("state_dict_msd") is not None
+            and checkpoint.get("state_dict_generator") is not None
+        ):
+            self.model.mpd.load_state_dict(checkpoint["state_dict_mpd"])
+            self.model.msd.load_state_dict(checkpoint["state_dict_msd"])
+            self.model.generator.load_state_dict(checkpoint["state_dict_generator"])
         else:
             self.model.load_state_dict(checkpoint)
