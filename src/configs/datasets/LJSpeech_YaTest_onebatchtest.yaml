@@ -6,4 +6,5 @@ train:
 
 test:
   _target_: src.datasets.YandexDownloadDataset
+  limit: 1
  

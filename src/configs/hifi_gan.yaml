@@ -2,7 +2,7 @@ defaults:
   - model: hifi_gan_v2
   - writer: wandb
   - metrics: inference_mos
-  - datasets: LJSpeech_YaTest
+  - datasets: LJSpeech_YaTest_onebatchtest
   - dataloader: colab
   - transforms: only_batch
   - _self_
@@ -19,11 +19,11 @@ optimizer_g:
 lr_scheduler_d:
   _target_: torch.optim.lr_scheduler.StepLR
   gamma: 0.999
-  step_size: ${trainer.epoch_len}
+  step_size: ${trainer.lr_step_size}
 lr_scheduler_g:
   _target_: torch.optim.lr_scheduler.StepLR
   gamma: 0.999
-  step_size: ${trainer.epoch_len}
+  step_size: ${trainer.lr_step_size}
 loss_function_d:
   _target_: src.loss.DiscriminatorLoss
 loss_function_g:
@@ -31,12 +31,13 @@ loss_function_g:
 trainer:
   log_step: 50
   n_epochs: 100
-  epoch_len: 500
+  epoch_len: null
+  lr_step_size: 13100 # each epoch in original paper, e.g. every 13100 steps with bs 1
   device_tensors: ["audio", "mel_spectrogram"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
   override: False # if True, will override the previous run with the same name
-  monitor: "max test_MulticlassAccuracy" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
+  monitor: "max MOS" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
   save_period: 5 # checkpoint each save_period epochs in addition to the best epoch
   early_stop: ${trainer.n_epochs} # epochs for early stopping
   save_dir: "saved"
