@@ -2,7 +2,7 @@ defaults:
   - model: hifi_gan_v2
   - writer: wandb
   - metrics: inference_mos
-  - datasets: LJSpeech_YaTest_onebatchtest
+  - datasets: LJSpeech_YaTest
   - dataloader: colab
   - transforms: only_batch
   - _self_
