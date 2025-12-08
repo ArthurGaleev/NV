@@ -115,9 +115,9 @@ class Trainer(BaseTrainer):
         else:
             self.log_spectrogram(
                 batch["mel_spectrogram_fake"],
-                spectrogram_name=f"{Path(batch["audio_path"]).stem}_mel_spectrogram",
+                spectrogram_name=f"{Path(batch['audio_path']).stem}_mel_spectrogram",
             )
-            self.log_audio(batch["audio_fake"], audio_name=f"{Path(batch["audio_path"]).stem}_audio")
+            self.log_audio(batch["audio_fake"], audio_name=f"{Path(batch['audio_path']).stem}_audio")
 
     def log_spectrogram(self, spectrogram, spectrogram_name="mel_spectrogram"):
         spectrogram_for_plot = spectrogram[0].detach().cpu()
