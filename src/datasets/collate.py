@@ -20,5 +20,6 @@ def collate_fn(dataset_items: list[dict]):
     result_batch["mel_spectrogram"] = torch.vstack(
         [elem["mel_spectrogram"] for elem in dataset_items]
     )
+    result_batch["audio_path"] = [elem["audio_path"] for elem in dataset_items]
 
     return result_batch
