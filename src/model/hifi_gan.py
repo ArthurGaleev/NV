@@ -187,7 +187,9 @@ class SubMSD(nn.Module):
                 #     nn.Conv1d(128, 256, kernel_size=41, stride=2, groups=32, padding=20)
                 # ),
                 norm_func(
-                    nn.Conv1d(256, 1024, kernel_size=41, stride=4, groups=64, padding=20)
+                    nn.Conv1d(
+                        256, 1024, kernel_size=41, stride=4, groups=64, padding=20
+                    )
                 ),
                 # norm_func(
                 #     nn.Conv1d(
