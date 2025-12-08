@@ -2,8 +2,8 @@ train:
   _target_: src.datasets.LJSpeechDataset
   audio_len: 8192  # cropped audio length
   sample_rate: 22050
-  limit: 1000
+  limit: 10
 
-val:
+test:
   _target_: src.datasets.YandexDownloadDataset
  
