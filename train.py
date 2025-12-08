@@ -65,7 +65,10 @@ def main(config):
         else model.module.msd.parameters(),
     )
     trainable_params_generator = filter(
-        lambda p: p.requires_grad, model.generator.parameters()
+        lambda p: p.requires_grad,
+        model.generator.parameters()
+        if not config.trainer.get("parallel", False)
+        else model.module.generator.parameters(),
     )
     optimizer_d = instantiate(
         config.optimizer_d, params=chain(trainable_params_mpd, trainable_params_msd)
