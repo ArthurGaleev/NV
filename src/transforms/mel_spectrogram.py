@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import torch
 from torch import nn
 import torch.nn.functional as F
+import math
 
 import torchaudio
 
@@ -42,10 +43,15 @@ class MelSpectrogram(nn.Module):
         :param audio: Expected shape is [B, T]
         :return: Shape is [B, n_mels, T']
         """
+        # make the spectrogram length equal to nearest value in the power of 2
+        # e.g. for 8192 audio length and mel config above, mel_frames=31 => 
+        # => output spectrogram length would be 32, we will pad the audio to handle this
+        mel_frames = (audio.shape[-1] - self.config.n_fft) // self.config.hop_length + 1
+        mel_frames = 2**math.ceil(math.log2(mel_frames))
+        pad_amount = ((mel_frames - 1) * self.config.hop_length) - (audio.shape[-1] - self.config.n_fft)
 
         # pad to 8960, so mel spec size would be 32
-        if audio.shape[1] != self.config.audio_len_for_mel_spec:
-            pad_amount = self.config.audio_len_for_mel_spec - audio.shape[1]
+        if pad_amount:
             audio = F.pad(audio, (0, pad_amount), mode='constant')
 
         mel = self.mel_spectrogram.to(audio.device)(audio)
