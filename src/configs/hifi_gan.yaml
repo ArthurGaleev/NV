@@ -30,8 +30,8 @@ loss_function_g:
   _target_: src.loss.GeneratorLoss
 trainer:
   log_step: 50
-  n_epochs: 100
-  epoch_len: 350
+  n_epochs: 800
+  epoch_len: 200 # 13100 / 64(batch_size) ≈ 200 steps 
   device_tensors: ["audio", "mel_spectrogram"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
