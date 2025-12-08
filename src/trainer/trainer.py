@@ -121,7 +121,7 @@ class Trainer(BaseTrainer):
 
     def log_spectrogram(self, spectrogram, spectrogram_name="mel_spectrogram"):
         spectrogram_for_plot = spectrogram.detach().cpu()
-        image = plot_spectrogram(spectrogram_for_plot, self.config)
+        image = plot_spectrogram(spectrogram_for_plot, spectrogram_name)
         self.writer.add_image(spectrogram_name, image)
 
     def log_audio(self, audio, audio_name="audio"):
