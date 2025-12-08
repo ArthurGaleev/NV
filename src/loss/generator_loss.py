@@ -1,7 +1,8 @@
-import torch
-from torch import nn
 from typing import List
+
+import torch
 import torch.nn.functional as F
+from torch import nn
 
 
 class GeneratorLoss(nn.Module):
@@ -14,17 +15,17 @@ class GeneratorLoss(nn.Module):
         super().__init__()
 
     def forward(
-            self, 
-            mel_spectrogram: torch.Tensor,
-            mel_spectrogram_fake: torch.Tensor,
-            mpd_features: List[torch.Tensor],
-            mpd_fake: torch.Tensor,
-            mpd_features_fake: List[torch.Tensor],
-            msd_features: List[torch.Tensor],
-            msd_fake: List[torch.Tensor],
-            msd_features_fake: List[torch.Tensor],
-            **batch
-        ):
+        self,
+        mel_spectrogram: torch.Tensor,
+        mel_spectrogram_fake: torch.Tensor,
+        mpd_features: List[torch.Tensor],
+        mpd_fake: torch.Tensor,
+        mpd_features_fake: List[torch.Tensor],
+        msd_features: List[torch.Tensor],
+        msd_fake: List[torch.Tensor],
+        msd_features_fake: List[torch.Tensor],
+        **batch
+    ):
         """
         Args:
             mel_spectrogram (Tensor): mel spectrogram for real audio
@@ -45,19 +46,17 @@ class GeneratorLoss(nn.Module):
         # MPD
         loss_gan_mpd = 0
         for fake in mpd_fake:
-            loss_gan_mpd += torch.mean((1 - fake)**2)
-        
+            loss_gan_mpd += torch.mean((1 - fake) ** 2)
+
         # MSD
         loss_gan_msd = 0
         for fake in msd_fake:
-            loss_gan_msd += torch.mean((1 - fake)**2)
-        
-        loss_gan = loss_gan_mpd + loss_gan_msd
+            loss_gan_msd += torch.mean((1 - fake) ** 2)
 
+        loss_gan = loss_gan_mpd + loss_gan_msd
 
         # Mel-Spectrogram Loss
         loss_mel_spec = F.l1_loss(mel_spectrogram, mel_spectrogram_fake)
-
 
         # Feature Matching Loss
 
@@ -75,7 +74,6 @@ class GeneratorLoss(nn.Module):
 
         loss_ftr_match = loss_ftr_match_mpd + loss_ftr_match_msd
 
-
         # Generator Loss
         loss = loss_gan + 45 * loss_mel_spec + 2 * loss_ftr_match
 
@@ -83,5 +81,5 @@ class GeneratorLoss(nn.Module):
             "loss": loss,
             "loss_gan_g": loss_gan,
             "loss_mel_spec_g": loss_mel_spec,
-            "loss_ftr_match_g": loss_ftr_match
+            "loss_ftr_match_g": loss_ftr_match,
         }

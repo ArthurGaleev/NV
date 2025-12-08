@@ -1,7 +1,8 @@
+import torch
+
+from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
-import torch
-from src.logger.utils import plot_spectrogram
 from src.transforms.mel_spectrogram import MelSpectrogramConfig
 
 
@@ -38,14 +39,18 @@ class Trainer(BaseTrainer):
             metric_funcs = self.metrics["train"]
 
         # Generator stage
-        outputs = self.model(batch['audio'], batch['mel_spectrogram'], first_stage=None)
+        outputs = self.model(batch["audio"], batch["mel_spectrogram"], first_stage=None)
         batch.update(outputs)
 
         # Fix Generator, update Discriminator stage
         if self.is_train:
             self.optimizer_d.zero_grad()
-        outputs = self.model(batch['audio'], batch['mel_spectrogram'], 
-                             first_stage=True, audio_fake=batch['audio_fake'].detach())
+        outputs = self.model(
+            batch["audio"],
+            batch["mel_spectrogram"],
+            first_stage=True,
+            audio_fake=batch["audio_fake"].detach(),
+        )
         batch.update(outputs)
 
         losses_d = self.criterion_d(**batch)
@@ -61,8 +66,12 @@ class Trainer(BaseTrainer):
         # Update Generator stage
         if self.is_train:
             self.optimizer_g.zero_grad()
-        outputs = self.model(batch['audio'], batch['mel_spectrogram'], 
-                             first_stage=False, audio_fake=batch['audio_fake'])
+        outputs = self.model(
+            batch["audio"],
+            batch["mel_spectrogram"],
+            first_stage=False,
+            audio_fake=batch["audio_fake"],
+        )
         batch.update(outputs)
 
         losses_g = self.criterion_g(**batch)
@@ -80,7 +89,7 @@ class Trainer(BaseTrainer):
             metrics.update(loss_name, batch[loss_name].item())
 
         for met in metric_funcs:
-            metrics.update(met.name, met(batch['audio_fake']))
+            metrics.update(met.name, met(batch["audio_fake"]))
         return batch
 
     def _log_batch(self, batch_idx, batch, mode="train"):
@@ -113,6 +122,7 @@ class Trainer(BaseTrainer):
         spectrogram_for_plot = spectrogram[0].detach().cpu()
         image = plot_spectrogram(spectrogram_for_plot, self.config)
         self.writer.add_image(spectrogram_name, image)
+
     def log_audio(self, audio, audio_name="audio"):
         audio = audio[0].detach().cpu()
         self.writer.add_audio(audio_name, audio, sample_rate=MelSpectrogramConfig.sr)

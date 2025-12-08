@@ -1,3 +1,2 @@
 test:
   _target_: src.datasets.YandexDownloadDataset
-  

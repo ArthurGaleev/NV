@@ -5,6 +5,7 @@ from typing import List
 import torch
 import torchaudio
 from torch.utils.data import Dataset
+
 from src.transforms.mel_spectrogram import MelSpectrogram, MelSpectrogramConfig
 
 logger = logging.getLogger(__name__)
@@ -146,7 +147,8 @@ class BaseDataset(Dataset):
         """
         for entry in index:
             assert "audio_path" in entry, (
-                "Each dataset item should include field 'audio_path'" " - path to audio file."
+                "Each dataset item should include field 'audio_path'"
+                " - path to audio file."
             )
 
     @staticmethod

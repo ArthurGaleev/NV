@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple, Union
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch.nn.utils.parametrizations import weight_norm, spectral_norm
+from torch.nn.utils.parametrizations import spectral_norm, weight_norm
 
 from src.transforms.mel_spectrogram import MelSpectrogram, MelSpectrogramConfig
 
@@ -203,7 +203,9 @@ class SubMSD(nn.Module):
             ]
         )
 
-        self.conv_end = norm_func(nn.Conv1d(1024, 1, kernel_size=3, stride=1, padding=1))
+        self.conv_end = norm_func(
+            nn.Conv1d(1024, 1, kernel_size=3, stride=1, padding=1)
+        )
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, List[torch.Tensor]]:
         layer_features = []
@@ -313,16 +315,18 @@ class HiFiGAN(nn.Module):
         """
 
         # runs Generator
-        if first_stage == None:
+        if first_stage is None:
             # Generator
-            audio_fake = self.generator(mel_spectrogram_real).squeeze(1)[:, :audio_real.shape[-1]]  # adjust fake to real length, this would only do smth if real audio wasn't of the power of 2, e.g. in train with cropped to 8192 audio the fake audio would already have the same 8192 length 
+            audio_fake = self.generator(mel_spectrogram_real).squeeze(1)[
+                :, : audio_real.shape[-1]
+            ]  # adjust fake to real length, this would only do smth if real audio wasn't of the power of 2, e.g. in train with cropped to 8192 audio the fake audio would already have the same 8192 length
             mel_spectrogram_fake = self.get_mel_spectrogram(audio_fake)
 
             return {
                 "audio_fake": audio_fake,
                 "mel_spectrogram_fake": mel_spectrogram_fake,
             }
-        
+
         audio_real = audio_real.unsqueeze(1)
         audio_fake = audio_fake.unsqueeze(1)
 

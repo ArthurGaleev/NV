@@ -12,7 +12,7 @@ class MOS(BaseMetric):
         super().__init__(*args, **kwargs)
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model = get_wvmos(cuda = (device=="cuda"))
+        self.model = get_wvmos(cuda=(device == "cuda"))
 
     def __call__(self, audio, **batch):
         """
@@ -26,7 +26,7 @@ class MOS(BaseMetric):
         # convert to batch format if needed
         if audio.dim() == 1:
             audio = audio.unsqueeze(0)
-        
+
         mos_scores = []
         for i in range(audio.shape[0]):
             mos_scores.append(self.model.get_mos_score(audio[i]))

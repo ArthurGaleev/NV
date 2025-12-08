@@ -2,9 +2,9 @@ import io
 import os
 import zipfile
 from urllib.parse import urlencode
-from tqdm.auto import tqdm
 
 import requests
+from tqdm.auto import tqdm
 
 from src.datasets.CustomDir_dataset import CustomDirDataset
 from src.utils.io_utils import ROOT_PATH
@@ -43,4 +43,4 @@ class YandexDownloadDataset(CustomDirDataset):
         for audio_path in list((data_dir / download_name / "gt_audio").iterdir()):
             data.append({"audio_path": str(audio_path)})
 
-        super().__init__(data=data, path=data_dir/download_name, *args, **kwargs)
+        super().__init__(data=data, path=data_dir / download_name, *args, **kwargs)

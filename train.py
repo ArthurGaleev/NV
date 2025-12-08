@@ -1,10 +1,10 @@
 import warnings
+from itertools import chain
 
 import hydra
 import torch
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
-from itertools import chain
 
 from src.datasets.data_utils import get_dataloaders
 from src.trainer import Trainer
@@ -50,8 +50,12 @@ def main(config):
     # build optimizer, learning rate scheduler
     trainable_params_mpd = filter(lambda p: p.requires_grad, model.mpd.parameters())
     trainable_params_msd = filter(lambda p: p.requires_grad, model.msd.parameters())
-    trainable_params_generator = filter(lambda p: p.requires_grad, model.generator.parameters())
-    optimizer_d = instantiate(config.optimizer_d, params=chain(trainable_params_mpd, trainable_params_msd))
+    trainable_params_generator = filter(
+        lambda p: p.requires_grad, model.generator.parameters()
+    )
+    optimizer_d = instantiate(
+        config.optimizer_d, params=chain(trainable_params_mpd, trainable_params_msd)
+    )
     optimizer_g = instantiate(config.optimizer_g, params=trainable_params_generator)
     lr_scheduler_d = instantiate(config.lr_scheduler_d, optimizer=optimizer_d)
     lr_scheduler_g = instantiate(config.lr_scheduler_g, optimizer=optimizer_g)
@@ -76,7 +80,7 @@ def main(config):
         logger=logger,
         writer=writer,
         batch_transforms=batch_transforms,
-        skip_oom=config.trainer.get("skip_oom", True)
+        skip_oom=config.trainer.get("skip_oom", True),
     )
 
     trainer.train()
