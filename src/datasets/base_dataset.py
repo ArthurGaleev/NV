@@ -70,7 +70,7 @@ class BaseDataset(Dataset):
         instance_data = {
             "audio": audio,
             "mel_spectrogram": mel_spectrogram,
-            # "audio_path": audio_path,
+            "audio_path": audio_path,
         }
 
         instance_data = self.preprocess_data(instance_data)

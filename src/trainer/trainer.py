@@ -4,6 +4,7 @@ from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
 from src.transforms.mel_spectrogram import MelSpectrogramConfig
+from pathlib import Path
 
 
 class Trainer(BaseTrainer):
@@ -114,9 +115,9 @@ class Trainer(BaseTrainer):
         else:
             self.log_spectrogram(
                 batch["mel_spectrogram_fake"],
-                spectrogram_name="mel_spectrogram_gen",
+                spectrogram_name=f"{Path(batch["audio_path"]).stem}_mel_spectrogram",
             )
-            self.log_audio(batch["audio_fake"], audio_name="audio_gen")
+            self.log_audio(batch["audio_fake"], audio_name=f"{Path(batch["audio_path"]).stem}_audio")
 
     def log_spectrogram(self, spectrogram, spectrogram_name="mel_spectrogram"):
         spectrogram_for_plot = spectrogram[0].detach().cpu()
