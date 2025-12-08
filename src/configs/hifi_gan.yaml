@@ -41,4 +41,7 @@ trainer:
   save_period: 10 # checkpoint each save_period epochs in addition to the best epoch
   early_stop: ${trainer.n_epochs} # epochs for early stopping
   save_dir: "saved"
+  parallel: False
+  save_reproducibility: False
+  dtype: "float32"
   seed: 1

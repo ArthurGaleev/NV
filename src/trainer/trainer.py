@@ -58,9 +58,12 @@ class Trainer(BaseTrainer):
         batch.update(losses_d)
 
         if self.is_train:
-            batch["loss_d"].backward()
+            self.autocast_grad_scaler.scale(
+                batch["loss_d"]
+            ).backward()
             self._clip_grad_norm()
-            self.optimizer_d.step()
+            self.autocast_grad_scaler.step(self.optimizer_d)
+            self.autocast_grad_scaler.update()
             if self.lr_scheduler_d is not None:
                 self.lr_scheduler_d.step()
 
@@ -79,9 +82,12 @@ class Trainer(BaseTrainer):
         batch.update(losses_g)
 
         if self.is_train:
-            batch["loss"].backward()
+            self.autocast_grad_scaler.scale(
+                batch["loss"]
+            ).backward()
             self._clip_grad_norm()
-            self.optimizer_g.step()
+            self.autocast_grad_scaler.step(self.optimizer_g)
+            self.autocast_grad_scaler.update()
             if self.lr_scheduler_g is not None:
                 self.lr_scheduler_g.step()
 

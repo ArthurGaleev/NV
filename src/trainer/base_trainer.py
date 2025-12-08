@@ -2,12 +2,14 @@ from abc import abstractmethod
 
 import torch
 from numpy import inf
+from torch.amp import GradScaler, autocast
 from torch.nn.utils import clip_grad_norm_
 from tqdm.auto import tqdm
 
 from src.datasets.data_utils import inf_loop
 from src.metrics.tracker import MetricTracker
 from src.utils.io_utils import ROOT_PATH
+from src.utils.torch_utils import dtype_to_str, str_to_dtype
 
 
 class BaseTrainer:
@@ -27,6 +29,7 @@ class BaseTrainer:
         lr_scheduler_g,
         config,
         device,
+        dtype,
         dataloaders,
         logger,
         writer,
@@ -77,6 +80,15 @@ class BaseTrainer:
         self.lr_scheduler_d = lr_scheduler_d
         self.lr_scheduler_g = lr_scheduler_g
         self.batch_transforms = batch_transforms
+
+        # autocast
+        self.training_dtype = str_to_dtype(dtype)
+        is_auto_cast_enabled = self.training_dtype != torch.float32
+
+        self.autocast_context = autocast(
+            device, dtype=self.training_dtype, enabled=is_auto_cast_enabled
+        )
+        self.autocast_grad_scaler = GradScaler(device, enabled=is_auto_cast_enabled)
 
         # define dataloaders
         self.train_dataloader = dataloaders["train"]
@@ -385,6 +397,8 @@ class BaseTrainer:
         config.trainer.max_grad_norm
         """
         if self.config["trainer"].get("max_grad_norm", None) is not None:
+            self.autocast_grad_scaler.unscale_(self.optimizer_d)
+            self.autocast_grad_scaler.unscale_(self.optimizer_g)
             clip_grad_norm_(
                 self.model.parameters(), self.config["trainer"]["max_grad_norm"]
             )

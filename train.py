@@ -23,7 +23,7 @@ def main(config):
     Args:
         config (DictConfig): hydra experiment config.
     """
-    set_random_seed(config.trainer.seed)
+    set_random_seed(config.trainer.seed, config.trainer.get("save_reproducibility", True))
 
     project_config = OmegaConf.to_container(config)
     logger = setup_saving_and_logging(config)
@@ -40,6 +40,8 @@ def main(config):
 
     # build model architecture, then print to console
     model = instantiate(config.model).to(device)
+    if config.trainer.get("parallel", False):
+        model = torch.nn.DataParallel(model)
     logger.info(model)
 
     # get function handles of loss and metrics
@@ -75,6 +77,7 @@ def main(config):
         lr_scheduler_g=lr_scheduler_g,
         config=config,
         device=device,
+        dtype=config.trainer.get("dtype", "float32"),
         dataloaders=dataloaders,
         epoch_len=epoch_len,
         logger=logger,
