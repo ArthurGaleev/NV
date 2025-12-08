@@ -527,19 +527,28 @@ class BaseTrainer:
         if (
             checkpoint["config"]["optimizer_d"] != self.config["optimizer_d"]
             or checkpoint["config"]["optimizer_g"] != self.config["optimizer_g"]
-            or checkpoint["config"]["lr_scheduler_d"] != self.config["lr_scheduler_d"]
-            or checkpoint["config"]["lr_scheduler_g"] != self.config["lr_scheduler_g"]
         ):
             self.logger.warning(
-                "Warning: Optimizer or lr_scheduler given in the config file is different "
+                "Warning: Optimizer given in the config file is different "
                 "from that of the checkpoint. Optimizer and scheduler parameters "
                 "are not resumed."
             )
         else:
             self.optimizer_d.load_state_dict(checkpoint["optimizer_d"])
             self.optimizer_g.load_state_dict(checkpoint["optimizer_g"])
-            self.lr_scheduler_d.load_state_dict(checkpoint["lr_scheduler_d"])
-            self.lr_scheduler_g.load_state_dict(checkpoint["lr_scheduler_g"])
+
+            if (
+                checkpoint["config"]["lr_scheduler_d"] != self.config["lr_scheduler_d"]
+                or checkpoint["config"]["lr_scheduler_g"] != self.config["lr_scheduler_g"]
+            ):
+                 self.logger.warning(
+                    "Warning: lr_scheduler given in the config file is different "
+                    "from that of the checkpoint. Scheduler parameters "
+                    "are not resumed."
+                )
+            else:
+                self.lr_scheduler_d.load_state_dict(checkpoint["lr_scheduler_d"])
+                self.lr_scheduler_g.load_state_dict(checkpoint["lr_scheduler_g"])
 
         self.logger.info(
             f"Checkpoint loaded. Resume training from epoch {self.start_epoch}"
