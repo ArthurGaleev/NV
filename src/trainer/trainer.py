@@ -1,10 +1,11 @@
+from pathlib import Path
+
 import torch
 
 from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
 from src.transforms.mel_spectrogram import MelSpectrogramConfig
-from pathlib import Path
 
 
 class Trainer(BaseTrainer):
@@ -58,9 +59,7 @@ class Trainer(BaseTrainer):
         batch.update(losses_d)
 
         if self.is_train:
-            self.autocast_grad_scaler.scale(
-                batch["loss_d"]
-            ).backward()
+            self.autocast_grad_scaler.scale(batch["loss_d"]).backward()
             self._clip_grad_norm()
             self.autocast_grad_scaler.step(self.optimizer_d)
             self.autocast_grad_scaler.update()
@@ -82,9 +81,7 @@ class Trainer(BaseTrainer):
         batch.update(losses_g)
 
         if self.is_train:
-            self.autocast_grad_scaler.scale(
-                batch["loss"]
-            ).backward()
+            self.autocast_grad_scaler.scale(batch["loss"]).backward()
             self._clip_grad_norm()
             self.autocast_grad_scaler.step(self.optimizer_g)
             self.autocast_grad_scaler.update()
@@ -123,7 +120,10 @@ class Trainer(BaseTrainer):
                 batch["mel_spectrogram_fake"][0],
                 spectrogram_name=f"{Path(batch['audio_path'][0]).stem}_mel_spectrogram",
             )
-            self.log_audio(batch["audio_fake"][0], audio_name=f"{Path(batch['audio_path'][0]).stem}_audio")
+            self.log_audio(
+                batch["audio_fake"][0],
+                audio_name=f"{Path(batch['audio_path'][0]).stem}_audio",
+            )
 
     def log_spectrogram(self, spectrogram, spectrogram_name="mel_spectrogram"):
         spectrogram_for_plot = spectrogram.detach().cpu()

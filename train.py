@@ -23,7 +23,9 @@ def main(config):
     Args:
         config (DictConfig): hydra experiment config.
     """
-    set_random_seed(config.trainer.seed, config.trainer.get("save_reproducibility", True))
+    set_random_seed(
+        config.trainer.seed, config.trainer.get("save_reproducibility", True)
+    )
 
     project_config = OmegaConf.to_container(config)
     logger = setup_saving_and_logging(config)
@@ -50,8 +52,18 @@ def main(config):
     metrics = instantiate(config.metrics)
 
     # build optimizer, learning rate scheduler
-    trainable_params_mpd = filter(lambda p: p.requires_grad, model.mpd.parameters())
-    trainable_params_msd = filter(lambda p: p.requires_grad, model.msd.parameters())
+    trainable_params_mpd = filter(
+        lambda p: p.requires_grad,
+        model.mpd.parameters()
+        if not config.trainer.get("parallel", False)
+        else model.module.mpd.parameters(),
+    )
+    trainable_params_msd = filter(
+        lambda p: p.requires_grad,
+        model.msd.parameters()
+        if not config.trainer.get("parallel", False)
+        else model.module.msd.parameters(),
+    )
     trainable_params_generator = filter(
         lambda p: p.requires_grad, model.generator.parameters()
     )

@@ -487,9 +487,15 @@ class BaseTrainer:
         state = {
             "arch": arch,
             "epoch": epoch,
-            "state_dict_mpd": self.model.mpd.state_dict(),
-            "state_dict_msd": self.model.msd.state_dict(),
-            "state_dict_generator": self.model.generator.state_dict(),
+            "state_dict_mpd": self.model.mpd.state_dict()
+            if not self.config.trainer.get("parallel", False)
+            else self.model.module.mpd.parameters(),
+            "state_dict_msd": self.model.msd.state_dict()
+            if not self.config.trainer.get("parallel", False)
+            else self.model.module.msd.parameters(),
+            "state_dict_generator": self.model.generator.state_dict()
+            if not self.config.trainer.get("parallel", False)
+            else self.model.module.generator.parameters(),
             "optimizer_d": self.optimizer_d.state_dict(),
             "optimizer_g": self.optimizer_g.state_dict(),
             "lr_scheduler_d": self.lr_scheduler_d.state_dict(),
@@ -534,39 +540,17 @@ class BaseTrainer:
                 "Warning: Architecture configuration given in the config file is different from that "
                 "of the checkpoint. This may yield an exception when state_dict is loaded."
             )
-        try:
+        if not self.config.trainer.get("parallel", False):
             self.model.mpd.load_state_dict(checkpoint["state_dict_mpd"])
             self.model.msd.load_state_dict(checkpoint["state_dict_msd"])
             self.model.generator.load_state_dict(checkpoint["state_dict_generator"])
-        except RuntimeError as e:
-            # Handle the case where the state_dict keys have the 'module.' prefix
-            new_state_dict = OrderedDict()
-            for k, v in checkpoint["state_dict_mpd"].items():
-                if k.startswith('module.'):
-                    name = k[7:] # remove 'module.'
-                else:
-                    name = k
-                new_state_dict[name] = v
-            self.model.mpd.load_state_dict(new_state_dict)
+        else:
+            self.model.module.mpd.load_state_dict(checkpoint["state_dict_mpd"])
+            self.model.module.msd.load_state_dict(checkpoint["state_dict_msd"])
+            self.model.module.generator.load_state_dict(
+                checkpoint["state_dict_generator"]
+            )
 
-            new_state_dict = OrderedDict()
-            for k, v in checkpoint["state_dict_msd"].items():
-                if k.startswith('module.'):
-                    name = k[7:] # remove 'module.'
-                else:
-                    name = k
-                new_state_dict[name] = v
-            self.model.msd.load_state_dict(new_state_dict)
-
-            new_state_dict = OrderedDict()
-            for k, v in checkpoint["state_dict_generator"].items():
-                if k.startswith('module.'):
-                    name = k[7:] # remove 'module.'
-                else:
-                    name = k
-                new_state_dict[name] = v
-            self.model.generator.load_state_dict(new_state_dict)
-        
         # load optimizer state from checkpoint only when optimizer type is not changed.
         if (
             checkpoint["config"]["optimizer_d"] != self.config["optimizer_d"]
@@ -583,9 +567,10 @@ class BaseTrainer:
 
             if (
                 checkpoint["config"]["lr_scheduler_d"] != self.config["lr_scheduler_d"]
-                or checkpoint["config"]["lr_scheduler_g"] != self.config["lr_scheduler_g"]
+                or checkpoint["config"]["lr_scheduler_g"]
+                != self.config["lr_scheduler_g"]
             ):
-                 self.logger.warning(
+                self.logger.warning(
                     "Warning: lr_scheduler given in the config file is different "
                     "from that of the checkpoint. Scheduler parameters "
                     "are not resumed."
@@ -621,53 +606,15 @@ class BaseTrainer:
             and checkpoint.get("state_dict_msd") is not None
             and checkpoint.get("state_dict_generator") is not None
         ):
-            try:
+            if not self.config.trainer.get("parallel", False):
                 self.model.mpd.load_state_dict(checkpoint["state_dict_mpd"])
                 self.model.msd.load_state_dict(checkpoint["state_dict_msd"])
                 self.model.generator.load_state_dict(checkpoint["state_dict_generator"])
-            except RuntimeError as e:
-                # Handle the case where the state_dict keys have the 'module.' prefix
-                new_state_dict = OrderedDict()
-                for k, v in checkpoint["state_dict_mpd"].items():
-                    if k.startswith('module.'):
-                        name = k[7:] # remove 'module.'
-                    else:
-                        name = k
-                    new_state_dict[name] = v
-                self.model.mpd.load_state_dict(new_state_dict)
-
-                new_state_dict = OrderedDict()
-                for k, v in checkpoint["state_dict_msd"].items():
-                    if k.startswith('module.'):
-                        name = k[7:] # remove 'module.'
-                    else:
-                        name = k
-                    new_state_dict[name] = v
-                self.model.msd.load_state_dict(new_state_dict)
-                
-                new_state_dict = OrderedDict()
-                for k, v in checkpoint["state_dict_generator"].items():
-                    if k.startswith('module.'):
-                        name = k[7:] # remove 'module.'
-                    else:
-                        name = k
-                    new_state_dict[name] = v
-                self.model.generator.load_state_dict(new_state_dict)
+            else:
+                self.model.module.mpd.load_state_dict(checkpoint["state_dict_mpd"])
+                self.model.module.msd.load_state_dict(checkpoint["state_dict_msd"])
+                self.model.module.generator.load_state_dict(
+                    checkpoint["state_dict_generator"]
+                )
         else:
             self.model.load_state_dict(checkpoint)
-
-    def _load_model_state_dict(model, path):
-        state_dict = torch.load(path)
-        try:
-            model.load_state_dict(state_dict)
-        except RuntimeError as e:
-            # Handle the case where the state_dict keys have the 'module.' prefix
-            new_state_dict = OrderedDict()
-            for k, v in state_dict.items():
-                if k.startswith('module.'):
-                    name = k[7:] # remove 'module.'
-                else:
-                    name = k
-                new_state_dict[name] = v
-            model.load_state_dict(new_state_dict)
-        return model
