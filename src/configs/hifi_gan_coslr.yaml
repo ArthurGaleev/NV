@@ -13,7 +13,7 @@ optimizer_d:
   weight_decay: 0.01
 optimizer_g:
   _target_: torch.optim.AdamW
-  lr: 1e-4 # half of the generator for lower the discriminator impact
+  lr: 2e-4
   betas: [0.8, 0.99]
   weight_decay: 0.01
 lr_scheduler_d:
@@ -22,7 +22,7 @@ lr_scheduler_d:
   T_max: 24000 # n_epochs * epoch_len
 lr_scheduler_g:
   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
-  eta_min: 5e-7 # half of the generator
+  eta_min: 1e-6
   T_max: 24000 # n_epochs * epoch_len
 loss_function_d:
   _target_: src.loss.DiscriminatorLoss
