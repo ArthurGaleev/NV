@@ -27,12 +27,7 @@ class LJSpeechChunkDataset(BaseDataset):
         audio_crop_dir = data_dir / f"wavs_crop-{audio_len}"
 
         if not data_dir.exists():
-            kaggle.api.dataset_download_files(
-                "mathurinache/the-lj-speech-dataset",
-                path=path_dir,
-                quiet=False,
-                unzip=True,
-            )
+            torchaudio.datasets.LJSPEECH(root=path_dir, download=True)
 
         data = []
         for audio_path in list(audio_dir.iterdir()):
