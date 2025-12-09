@@ -123,15 +123,14 @@ class Trainer(BaseTrainer):
                 audio_name="audio",
             )
         else:
-            for i in range(5):
-                self.log_spectrogram(
-                    batch["mel_spectrogram_fake"][i],
-                    spectrogram_name=f"{Path(batch['audio_path'][i]).stem}_mel_spectrogram",
-                )
-                self.log_audio(
-                    batch["audio_fake"][i],
-                    audio_name=f"{Path(batch['audio_path'][i]).stem}_audio",
-                )
+            self.log_spectrogram(
+                batch["mel_spectrogram_fake"][0],
+                spectrogram_name=f"{Path(batch['audio_path'][0]).stem}_mel_spectrogram",
+            )
+            self.log_audio(
+                batch["audio_fake"][0],
+                audio_name=f"{Path(batch['audio_path'][0]).stem}_audio",
+            )
 
     def log_spectrogram(self, spectrogram, spectrogram_name="mel_spectrogram"):
         spectrogram_for_plot = spectrogram.detach().cpu()
