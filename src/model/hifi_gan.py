@@ -52,7 +52,7 @@ class MRF(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         for res_block in self.res_blocks:
-            x = res_block(x)
+            x = x + res_block(x)
         return x
 
 
