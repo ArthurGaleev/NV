@@ -283,6 +283,7 @@ class BaseTrainer:
         self.model.eval()
         self.evaluation_metrics.reset()
         with torch.no_grad():
+            self.writer.set_step(epoch * self.epoch_len, part)
             for batch_idx, batch in tqdm(
                 enumerate(dataloader),
                 desc=part,
@@ -292,7 +293,6 @@ class BaseTrainer:
                     batch,
                     metrics=self.evaluation_metrics,
                 )
-                self.writer.set_step(epoch * self.epoch_len + batch_idx, part)
                 self._log_batch(
                     batch_idx, batch, part
                 )  # log every batch, because batch_size=1 during inference
