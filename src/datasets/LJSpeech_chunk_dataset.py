@@ -26,6 +26,7 @@ class LJSpeechChunkDataset(BaseDataset):
         audio_crop_dir = data_dir / f"wavs_crop-{audio_len}"
 
         if not data_dir.exists():
+            path_dir.mkdir(exist_ok=True, parents=True)
             torchaudio.datasets.LJSPEECH(root=path_dir, download=True)
 
         data = []
