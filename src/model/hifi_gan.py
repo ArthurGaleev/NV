@@ -299,9 +299,9 @@ class HiFiGAN(nn.Module):
 
     def forward(
         self,
-        audio_real: torch.Tensor,
         mel_spectrogram_real: torch.Tensor,
         first_stage: bool = None,
+        audio_real: torch.Tensor = None,
         audio_fake: torch.Tensor = None,
     ) -> Dict[str, Union[torch.Tensor, List[torch.Tensor]]]:
         """
@@ -319,9 +319,14 @@ class HiFiGAN(nn.Module):
         # runs Generator
         if first_stage is None:
             # Generator
-            audio_fake = self.generator(mel_spectrogram_real).squeeze(1)[
-                :, : audio_real.shape[-1]
-            ]  # adjust fake to real length, this would only do smth if real audio wasn't of the power of 2, e.g. in train with cropped to 8192 audio the fake audio would already have the same 8192 length
+            if audio_real is not None:
+                audio_fake = self.generator(mel_spectrogram_real).squeeze(1)[
+                    :, : audio_real.shape[-1]
+                ]  # adjust fake to real length, this would only do smth if real audio wasn't of the power of 2, e.g. in train with cropped to 8192 audio the fake audio would already have the same 8192 length
+            else:
+                # if audio_real is None, just return the full audio_fake
+                audio_fake = self.generator(mel_spectrogram_real).squeeze(1)
+                
             mel_spectrogram_fake = self.get_mel_spectrogram(audio_fake)
 
             return {

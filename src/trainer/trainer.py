@@ -41,16 +41,16 @@ class Trainer(BaseTrainer):
             metric_funcs = self.metrics["train"]
 
         # Generator stage
-        outputs = self.model(batch["audio"], batch["mel_spectrogram"], first_stage=None)
+        outputs = self.model(batch["mel_spectrogram"], first_stage=None, audio_real=batch["audio"])
         batch.update(outputs)
 
         # Fix Generator, update Discriminator stage
         if self.is_train:
             self.optimizer_d.zero_grad()
         outputs = self.model(
-            batch["audio"],
             batch["mel_spectrogram"],
             first_stage=True,
+            audio_real=batch["audio"],
             audio_fake=batch["audio_fake"].detach(),
         )
         batch.update(outputs)
@@ -70,9 +70,9 @@ class Trainer(BaseTrainer):
         if self.is_train:
             self.optimizer_g.zero_grad()
         outputs = self.model(
-            batch["audio"],
             batch["mel_spectrogram"],
             first_stage=False,
+            audio_real=batch["audio"],
             audio_fake=batch["audio_fake"],
         )
         batch.update(outputs)
