@@ -21,7 +21,7 @@ class BaseDataset(Dataset):
     """
 
     def __init__(
-        self, index, limit=None, shuffle_index=False, instance_transforms=None
+        self, index, limit=None, shuffle_index=False, instance_transforms=None, use_pretrained_text2mel=False
     ):
         """
         Args:
@@ -44,6 +44,7 @@ class BaseDataset(Dataset):
         self.get_mel_spectrogram = MelSpectrogram(MelSpectrogramConfig)
 
         self.instance_transforms = instance_transforms
+        self.use_pretrained_text2mel = use_pretrained_text2mel
 
     def __getitem__(self, ind):
         """
@@ -62,6 +63,18 @@ class BaseDataset(Dataset):
         """
 
         data_dict = self._index[ind]
+
+        if self.use_pretrained_text2mel:
+            if "audio_path" in data_dict.keys():
+                return {
+                    "mel_spectrogram": data_dict["mel_spectrogram"],
+                    "audio_path": data_dict["audio_path"],
+                }
+            return {
+                "mel_spectrogram": data_dict["mel_spectrogram"],
+                "text_path": data_dict["text_path"],
+            }
+            
         audio_path = data_dict["audio_path"]
 
         audio = self.load_audio(audio_path)
@@ -146,9 +159,9 @@ class BaseDataset(Dataset):
                 such as label and object path.
         """
         for entry in index:
-            assert "audio_path" in entry, (
-                "Each dataset item should include field 'audio_path'"
-                " - path to audio file."
+            assert "audio" or "mel_spectrogram" in entry, (
+                "Each dataset item should include field 'audio' 'mel_spectrogram'"
+                " - pnly mel spectrogram if there were no gt_audio, audio transcriptions instead."
             )
 
     @staticmethod

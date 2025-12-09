@@ -326,7 +326,7 @@ class HiFiGAN(nn.Module):
             else:
                 # if audio_real is None, just return the full audio_fake
                 audio_fake = self.generator(mel_spectrogram_real).squeeze(1)
-                
+
             mel_spectrogram_fake = self.get_mel_spectrogram(audio_fake)
 
             return {

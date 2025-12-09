@@ -1,6 +1,7 @@
 import io
 import os
 import zipfile
+from pathlib import Path
 from urllib.parse import urlencode
 
 import requests
@@ -21,6 +22,7 @@ class YandexDownloadDataset(CustomDirDataset):
     def __init__(
         self,
         download_name="test_data",
+        use_pretrained_text2mel=False,
         *args,
         **kwargs,
     ):
@@ -30,8 +32,12 @@ class YandexDownloadDataset(CustomDirDataset):
         """
         data_dir = ROOT_PATH / "data" / "datasets"
         if not (data_dir / download_name).exists():
-            data_dir.mkdir(exist_ok=True, parents=True)
             download_info = YANDEX_URL[download_name]
+            assert download_info[
+                "public_key"
+            ], "YANDEX_DISK_URL env var is not specified"
+
+            data_dir.mkdir(exist_ok=True, parents=True)
             final_url = download_info["base_url"] + urlencode(
                 dict(public_key=download_info["public_key"])
             )
@@ -44,7 +50,23 @@ class YandexDownloadDataset(CustomDirDataset):
             zip.extractall(data_dir)
 
         data = []
-        for audio_path in list((data_dir / download_name / "gt_audio").iterdir()):
-            data.append({"audio_path": str(audio_path)})
+        if (data_dir / download_name / "gt_audio").exists():
+            audio_dir_name = "gt_audio"
+        elif (data_dir / download_name / "wavs").exists():
+            audio_dir_name = "wavs"
+        else:
+            audio_dir_name = None
 
-        super().__init__(data=data, path=data_dir / download_name, *args, **kwargs)
+        if audio_dir_name is not None:
+            for audio_path in list(
+                (data_dir / download_name / audio_dir_name).iterdir()
+            ):
+                data.append({"audio_path": str(audio_path)})
+
+        super().__init__(
+            data=data,
+            path=data_dir / download_name,
+            use_pretrained_text2mel=use_pretrained_text2mel,
+            *args,
+            **kwargs,
+        )

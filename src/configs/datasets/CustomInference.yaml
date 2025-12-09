@@ -1,0 +1,4 @@
+test:
+  _target_: src.datasets.YandexDownloadDataset
+  download_name: ${inferencer.dataset_name}
+  use_pretrained_text2mel: ${inferencer.use_text2mel}

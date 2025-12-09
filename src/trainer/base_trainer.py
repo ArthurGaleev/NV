@@ -1,7 +1,9 @@
+import os
 from abc import abstractmethod
 from collections import OrderedDict
 
 import torch
+from huggingface_hub import HfApi
 from numpy import inf
 from torch.amp import GradScaler, autocast
 from torch.nn.utils import clip_grad_norm_
@@ -364,7 +366,8 @@ class BaseTrainer:
                 the dataloader with some of the tensors on the device.
         """
         for tensor_for_device in self.cfg_trainer.device_tensors:
-            batch[tensor_for_device] = batch[tensor_for_device].to(self.device)
+            if tensor_for_device in batch.keys():
+                batch[tensor_for_device] = batch[tensor_for_device].to(self.device)
         return batch
 
     def transform_batch(self, batch):
@@ -387,9 +390,10 @@ class BaseTrainer:
         transforms = self.batch_transforms.get(transform_type)
         if transforms is not None:
             for transform_name in transforms.keys():
-                batch[transform_name] = transforms[transform_name](
-                    batch[transform_name]
-                )
+                if transform_name in batch.keys():
+                    batch[transform_name] = transforms[transform_name](
+                        batch[transform_name]
+                    )
         return batch
 
     def _clip_grad_norm(self):
@@ -509,6 +513,19 @@ class BaseTrainer:
             if self.config.writer.log_checkpoints:
                 self.writer.add_checkpoint(filename, str(self.checkpoint_dir.parent))
             self.logger.info(f"Saving checkpoint: {filename} ...")
+
+            if "HF_TOKEN" in os.environ:
+                api = HfApi()
+
+                repo_id = "ArthurGaleev/HiFi-GAN-v2"
+                api.create_repo(repo_id, exist_ok=True)
+
+                api.upload_file(
+                    path_or_fileobj=filename,
+                    path_in_repo=f"{self.config.writer.run_name}-epoch{epoch}.pth",
+                    repo_id=repo_id,
+                )
+
         if save_best:
             best_path = str(self.checkpoint_dir / "model_best.pth")
             torch.save(state, best_path)
@@ -606,15 +623,8 @@ class BaseTrainer:
             and checkpoint.get("state_dict_msd") is not None
             and checkpoint.get("state_dict_generator") is not None
         ):
-            if not self.config.trainer.get("parallel", False):
-                self.model.mpd.load_state_dict(checkpoint["state_dict_mpd"])
-                self.model.msd.load_state_dict(checkpoint["state_dict_msd"])
-                self.model.generator.load_state_dict(checkpoint["state_dict_generator"])
-            else:
-                self.model.module.mpd.load_state_dict(checkpoint["state_dict_mpd"])
-                self.model.module.msd.load_state_dict(checkpoint["state_dict_msd"])
-                self.model.module.generator.load_state_dict(
-                    checkpoint["state_dict_generator"]
-                )
+            self.model.mpd.load_state_dict(checkpoint["state_dict_mpd"])
+            self.model.msd.load_state_dict(checkpoint["state_dict_msd"])
+            self.model.generator.load_state_dict(checkpoint["state_dict_generator"])
         else:
             self.model.load_state_dict(checkpoint)

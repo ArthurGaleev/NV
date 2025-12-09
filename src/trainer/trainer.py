@@ -41,7 +41,9 @@ class Trainer(BaseTrainer):
             metric_funcs = self.metrics["train"]
 
         # Generator stage
-        outputs = self.model(batch["mel_spectrogram"], first_stage=None, audio_real=batch["audio"])
+        outputs = self.model(
+            batch["mel_spectrogram"], first_stage=None, audio_real=batch["audio"]
+        )
         batch.update(outputs)
 
         # Fix Generator, update Discriminator stage

@@ -1,6 +1,5 @@
 import os
 
-import kaggle
 import numpy as np
 import torch
 import torchaudio
@@ -21,12 +20,7 @@ class LJSpeechDataset(BaseDataset):
         audio_dir = data_dir / "wavs"
 
         if not data_dir.exists():
-            kaggle.api.dataset_download_files(
-                "mathurinache/the-lj-speech-dataset",
-                path=path_dir,
-                quiet=False,
-                unzip=True,
-            )
+            torchaudio.datasets.LJSPEECH(root=path_dir, download=True)
 
         data = []
         for audio_path in tqdm(list(audio_dir.iterdir()), desc="Creating val dataset"):
