@@ -114,16 +114,24 @@ class Trainer(BaseTrainer):
         # logging scheme might be different for different partitions
         if mode == "train":  # the method is called only every self.log_step steps
             # Log Stuff
-            pass
-        else:
             self.log_spectrogram(
                 batch["mel_spectrogram_fake"][0],
-                spectrogram_name=f"{Path(batch['audio_path'][0]).stem}_mel_spectrogram",
+                spectrogram_name="mel_spectrogram",
             )
             self.log_audio(
                 batch["audio_fake"][0],
-                audio_name=f"{Path(batch['audio_path'][0]).stem}_audio",
+                audio_name="audio",
             )
+        else:
+            for i in range(5):
+                self.log_spectrogram(
+                    batch["mel_spectrogram_fake"][i],
+                    spectrogram_name=f"{Path(batch['audio_path'][i]).stem}_mel_spectrogram",
+                )
+                self.log_audio(
+                    batch["audio_fake"][i],
+                    audio_name=f"{Path(batch['audio_path'][i]).stem}_audio",
+                )
 
     def log_spectrogram(self, spectrogram, spectrogram_name="mel_spectrogram"):
         spectrogram_for_plot = spectrogram.detach().cpu()
