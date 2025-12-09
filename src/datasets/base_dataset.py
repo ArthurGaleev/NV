@@ -21,7 +21,12 @@ class BaseDataset(Dataset):
     """
 
     def __init__(
-        self, index, limit=None, shuffle_index=False, instance_transforms=None, use_pretrained_text2mel=False
+        self,
+        index,
+        limit=None,
+        shuffle_index=False,
+        instance_transforms=None,
+        use_pretrained_text2mel=False,
     ):
         """
         Args:
@@ -74,7 +79,7 @@ class BaseDataset(Dataset):
                 "mel_spectrogram": data_dict["mel_spectrogram"],
                 "text_path": data_dict["text_path"],
             }
-            
+
         audio_path = data_dict["audio_path"]
 
         audio = self.load_audio(audio_path)
