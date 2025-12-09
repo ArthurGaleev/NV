@@ -17,6 +17,7 @@ class MelSpectrogramConfig:
     f_min: int = 0
     f_max: int = 8000
     n_mels: int = 80
+    power: float = 1.0
 
     # audio_len_for_mel_spec: int = 8960
 

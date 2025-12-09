@@ -24,7 +24,7 @@ class LJSpeechDataset(BaseDataset):
             torchaudio.datasets.LJSPEECH(root=path_dir, download=True)
 
         data = []
-        for audio_path in tqdm(list(audio_dir.iterdir()), desc="Creating val dataset"):
+        for audio_path in tqdm(list(audio_dir.iterdir()), desc="Creating dataset"):
             data.append({"audio_path": str(audio_path)})
 
         super().__init__(data, *args, **kwargs)

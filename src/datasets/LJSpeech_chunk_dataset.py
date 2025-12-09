@@ -54,7 +54,7 @@ class LJSpeechChunkDataset(BaseDataset):
 
         data = []
         for audio_path in tqdm(
-            list(audio_crop_dir.iterdir()), desc="Creating train dataset"
+            list(audio_crop_dir.iterdir()), desc="Creating dataset"
         ):
             data.append({"audio_path": str(audio_path)})
 
