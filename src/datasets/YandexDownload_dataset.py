@@ -24,6 +24,10 @@ class YandexDownloadDataset(CustomDirDataset):
         *args,
         **kwargs,
     ):
+        """
+        Args:
+            download_name (str): dataset name.
+        """
         data_dir = ROOT_PATH / "data" / "datasets"
         if not (data_dir / download_name).exists():
             data_dir.mkdir(exist_ok=True, parents=True)

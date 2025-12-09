@@ -1,3 +1,4 @@
 from src.datasets.CustomDir_dataset import CustomDirDataset
+from src.datasets.LJSpeech_chunk_dataset import LJSpeechChunkDataset
 from src.datasets.LJSpeech_dataset import LJSpeechDataset
 from src.datasets.YandexDownload_dataset import YandexDownloadDataset

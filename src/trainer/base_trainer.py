@@ -292,10 +292,10 @@ class BaseTrainer:
                     batch,
                     metrics=self.evaluation_metrics,
                 )
+                self.writer.set_step(epoch * self.epoch_len + batch_idx, part)
                 self._log_batch(
                     batch_idx, batch, part
                 )  # log every batch, because batch_size=1 during inference
-            self.writer.set_step(epoch * self.epoch_len, part)
             self._log_scalars(self.evaluation_metrics)
 
         return self.evaluation_metrics.result()
