@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 
 
 def collate_fn(dataset_items: list[dict]):
@@ -17,7 +18,15 @@ def collate_fn(dataset_items: list[dict]):
     result_batch = {}
 
     if "audio" in dataset_items[0].keys():
-        result_batch["audio"] = torch.vstack([elem["audio"] for elem in dataset_items])
+        result_batch["audio_len"] = [elem["audio"].shape[1] for elem in dataset_items]
+
+        max_len = max(result_batch["audio_len"])
+        result_batch["audio"] = torch.vstack(
+            [
+                F.pad(elem["audio"], (0, max_len-elem["audio"].shape[1]), mode="replicate") 
+                for elem in dataset_items
+            ]
+        )
     if "audio_path" in dataset_items[0].keys():
         result_batch["audio_path"] = [elem["audio_path"] for elem in dataset_items]
     if "text_path" in dataset_items[0].keys():
