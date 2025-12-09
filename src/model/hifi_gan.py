@@ -15,7 +15,7 @@ class Resblock1(nn.Module):
         self.conv_blocks = nn.ModuleList(
             [
                 nn.Sequential(
-                    nn.LeakyReLU(),
+                    nn.LeakyReLU(0.1),
                     nn.Conv1d(
                         input_dim,
                         input_dim,
@@ -23,7 +23,7 @@ class Resblock1(nn.Module):
                         dilation=d_r,
                         padding=(d_r * (k_r - 1)) // 2,
                     ),
-                    nn.LeakyReLU(),
+                    nn.LeakyReLU(0.1),
                     nn.Conv1d(
                         input_dim,
                         input_dim,
@@ -75,7 +75,7 @@ class Generator(nn.Module):
         self.convt_mrf_blokcs = nn.Sequential(
             *[
                 nn.Sequential(
-                    nn.LeakyReLU(),
+                    nn.LeakyReLU(0.1),
                     nn.ConvTranspose1d(
                         in_channels=hidden_u // (2**l),
                         out_channels=hidden_u // (2 ** (l + 1)),
@@ -97,7 +97,7 @@ class Generator(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv_start(x)
         x = self.convt_mrf_blokcs(x)
-        x = F.tanh(self.conv_end(F.leaky_relu(x)))
+        x = F.tanh(self.conv_end(F.leaky_relu(x, 0.1)))
         return x
 
 
@@ -131,7 +131,7 @@ class SubMPD(nn.Module):
 
         layer_features = []
         for conv in self.convs:
-            x = F.leaky_relu(conv(x))
+            x = F.leaky_relu(conv(x), 0.1)
             layer_features.append(x)
 
         x = self.conv_end(x)
@@ -213,7 +213,7 @@ class SubMSD(nn.Module):
         layer_features = []
         for l in self.convs:
             x = l(x)
-            x = F.leaky_relu(x)
+            x = F.leaky_relu(x, 0.1)
             layer_features.append(x)
 
         x = self.conv_end(x)
