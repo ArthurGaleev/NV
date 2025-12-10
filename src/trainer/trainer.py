@@ -42,7 +42,7 @@ class Trainer(BaseTrainer):
 
         # Generator stage
         outputs = self.model(
-            batch["mel_spectrogram"], first_stage=None, audio_real=batch["audio"]
+            batch["mel_spectrogram"], first_stage=None
         )
         batch.update(outputs)
 

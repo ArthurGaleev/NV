@@ -319,13 +319,13 @@ class HiFiGAN(nn.Module):
         # runs Generator
         if first_stage is None:
             # Generator
-            # if audio_real is not None:
-            #     audio_fake = self.generator(mel_spectrogram_real).squeeze(1)[
-            #         :, : audio_real.shape[-1]
-            #     ]  # adjust fake to real length, this would only do smth if real audio wasn't of the power of 2, e.g. in train with cropped to 8192 audio the fake audio would already have the same 8192 length
-            # else:
-            #     # if audio_real is None, just return the full audio_fake
-            audio_fake = self.generator(mel_spectrogram_real).squeeze(1)
+            if audio_real is not None:
+                audio_fake = self.generator(mel_spectrogram_real).squeeze(1)[
+                    :, : audio_real.shape[-1]
+                ]  # adjust fake to real length, this would only do smth if real audio wasn't of the power of 2, e.g. in train with cropped to 8192 audio the fake audio would already have the same 8192 length
+            else:
+                # if audio_real is None, just return the full audio_fake
+                audio_fake = self.generator(mel_spectrogram_real).squeeze(1)
 
             mel_spectrogram_fake = self.get_mel_spectrogram(audio_fake)
 
