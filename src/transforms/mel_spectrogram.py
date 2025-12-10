@@ -74,15 +74,6 @@ class MelSpectrogram(nn.Module):
 
         # mel = self.mel_spectrogram.to(audio.device)(audio)
 
-        audio = F.pad(
-            audio, 
-            (
-                (self.config.n_fft - self.config.hop_length) // 2,
-                (self.config.n_fft - self.config.hop_length) // 2
-            ),
-            mode="reflect"
-        )
-
         mel = self.mel_spectrogram.to(audio.device)(audio).clamp_(min=1e-5).log_()
         mel = self.mel_spectrogram(audio) \
             .clamp_(min=1e-5) \
