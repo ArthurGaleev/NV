@@ -46,8 +46,6 @@ def main(config):
             ROOT_PATH / "data" / "datasets" / "query_data" / "transcriptions"
         )
 
-        if transcriptions_dir.exists():
-            shutil.rmtree(transcriptions_dir)
         transcriptions_dir.mkdir(exist_ok=True, parents=True)
 
         texts = config.inferencer["texts_query"].splitlines()
