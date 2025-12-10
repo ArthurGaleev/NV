@@ -89,10 +89,6 @@ class Trainer(BaseTrainer):
             self.autocast_grad_scaler.update()
             if self.lr_scheduler_g is not None:
                 self.lr_scheduler_g.step()
-
-        for name, value in batch.items():
-            print(name, value.shape)
-            raise RuntimeError("WoooooooooW")
             
         # update metrics for each loss (in case of multiple losses)
         for loss_name in self.config.writer.loss_names:
