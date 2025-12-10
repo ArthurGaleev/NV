@@ -58,4 +58,4 @@ class LJSpeechChunkDataset(BaseDataset):
         ):
             data.append({"audio_path": str(audio_path)})
 
-        super().__init__(data, *args, **kwargs)
+        super().__init__(data, audio_len=audio_len, *args, **kwargs)

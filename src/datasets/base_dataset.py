@@ -27,6 +27,7 @@ class BaseDataset(Dataset):
         shuffle_index=False,
         instance_transforms=None,
         use_pretrained_text2mel=False,
+        audio_len=None
     ):
         """
         Args:
@@ -50,6 +51,7 @@ class BaseDataset(Dataset):
 
         self.instance_transforms = instance_transforms
         self.use_pretrained_text2mel = use_pretrained_text2mel
+        self.audio_len = audio_len
 
     def __getitem__(self, ind):
         """
@@ -83,7 +85,13 @@ class BaseDataset(Dataset):
         audio_path = data_dict["audio_path"]
 
         audio = self.load_audio(audio_path)
+
         mel_spectrogram = self.get_mel_spectrogram(audio)
+
+        if self.audio_len:
+            correct_mel_len = self.audio_len // 256
+            mel_rnd_start = random.randint(0, mel_spectrogram.shape(1) - correct_mel_len - 1)
+            mel_spectrogram = mel_spectrogram[:, mel_rnd_start:mel_rnd_start + correct_mel_len]
 
         instance_data = {
             "audio": audio,
