@@ -51,9 +51,13 @@ class MRF(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        res_sum = None
         for res_block in self.res_blocks:
-            x = x + res_block(x)
-        return x
+            if res_sum is None:
+                res_sum = res_block(x)
+            else:
+                res_sum += res_block(x)
+        return res_sum / len(self.res_blocks)
 
 
 class Generator(nn.Module):
