@@ -88,10 +88,10 @@ class BaseDataset(Dataset):
 
         mel_spectrogram = self.get_mel_spectrogram(audio)
 
-        if self.audio_len:
-            correct_mel_len = self.audio_len // 256
-            mel_rnd_start = random.randint(0, mel_spectrogram.shape[2] - correct_mel_len - 1)
-            mel_spectrogram = mel_spectrogram[:, :, mel_rnd_start:mel_rnd_start + correct_mel_len]
+        # if self.audio_len:
+        #     correct_mel_len = self.audio_len // 256
+        #     mel_rnd_start = random.randint(0, mel_spectrogram.shape[2] - correct_mel_len - 1)
+        #     mel_spectrogram = mel_spectrogram[:, :, mel_rnd_start:mel_rnd_start + correct_mel_len]
 
         instance_data = {
             "audio": audio,
