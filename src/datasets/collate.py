@@ -19,7 +19,6 @@ def collate_fn(dataset_items: list[dict]):
 
     if "audio" in dataset_items[0].keys():
         result_batch["audio_len"] = [elem["audio"].shape[1] for elem in dataset_items]
-
         max_len = max(result_batch["audio_len"])
         result_batch["audio"] = torch.vstack(
             [
@@ -32,8 +31,13 @@ def collate_fn(dataset_items: list[dict]):
     if "text_path" in dataset_items[0].keys():
         result_batch["text_path"] = [elem["text_path"] for elem in dataset_items]
 
+    result_batch["mel_spectrogram_len"] = [elem["mel_spectrogram_len"].shape[2] for elem in dataset_items]
+    max_len = max(result_batch["mel_spectrogram_len"])
     result_batch["mel_spectrogram"] = torch.vstack(
-        [elem["mel_spectrogram"] for elem in dataset_items]
-    )
+            [
+                F.pad(elem["mel_spectrogram"], (0, max_len-elem["mel_spectrogram"].shape[2]), mode="replicate") 
+                for elem in dataset_items
+            ]
+        )
 
     return result_batch
