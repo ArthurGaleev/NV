@@ -32,9 +32,9 @@ def collate_fn(dataset_items: list[dict]):
     if "text_path" in dataset_items[0].keys():
         result_batch["text_path"] = [elem["text_path"] for elem in dataset_items]
 
-    result_batch["mel_spectrogram"] = torch.vstack(
-        [elem["mel_spectrogram"] for elem in dataset_items]
-    )
+    # result_batch["mel_spectrogram"] = torch.vstack(
+    #     [elem["mel_spectrogram"] for elem in dataset_items]
+    # )
     result_batch["mel_spectrogram_len"] = [elem["mel_spectrogram"].shape[2] for elem in dataset_items]
     max_len = max(result_batch["mel_spectrogram_len"])
     result_batch["mel_spectrogram"] = torch.vstack(
