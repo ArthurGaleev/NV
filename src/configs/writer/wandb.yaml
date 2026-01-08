@@ -1,7 +1,7 @@
 _target_: src.logger.WandBWriter
 project_name: "neural_vocoder"
 entity: null
-run_name: "HiFi-GAN-v2.4"
+run_name: "HiFi-GAN-v1"
 mode: "online"
 loss_names: ["loss", "loss_d", "loss_gan_g", "loss_mel_spec_g", "loss_ftr_match_g"] # which losses to log (useful for multi-loss tasks, s.a. GANs)
 log_checkpoints: False # set to True if you want to log save_dir with checkpoints to W&B
