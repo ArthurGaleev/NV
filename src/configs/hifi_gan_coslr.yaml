@@ -19,18 +19,18 @@ optimizer_g:
 lr_scheduler_d:
   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
   eta_min: 1e-6
-  T_max: 160000 # n_epochs * epoch_len
+  T_max: 200000 # n_epochs * epoch_len
 lr_scheduler_g:
   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
   eta_min: 1e-6
-  T_max: 160000 # n_epochs * epoch_len
+  T_max: 200000 # n_epochs * epoch_len
 loss_function_d:
   _target_: src.loss.DiscriminatorLoss
 loss_function_g:
   _target_: src.loss.GeneratorLoss
 trainer:
-  log_step: 50
-  n_epochs: 400
+  log_step: 399
+  n_epochs: 500
   epoch_len: 400 # 13100 / 32(batch_size) ≈ 400 steps
   device_tensors: ["audio", "mel_spectrogram"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
