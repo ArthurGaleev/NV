@@ -1,5 +1,5 @@
 defaults:
-  - model: hifi_gan_v2
+  - model: hifi_gan_v1
   - writer: wandb
   - metrics: train_inference_mos
   - datasets: LJSpeechChunk_YaTest
@@ -19,25 +19,25 @@ optimizer_g:
 lr_scheduler_d:
   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
   eta_min: 1e-6
-  T_max: 10000 # n_epochs * epoch_len
+  T_max: 160000 # n_epochs * epoch_len
 lr_scheduler_g:
   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
   eta_min: 1e-6
-  T_max: 10000 # n_epochs * epoch_len
+  T_max: 160000 # n_epochs * epoch_len
 loss_function_d:
   _target_: src.loss.DiscriminatorLoss
 loss_function_g:
   _target_: src.loss.GeneratorLoss
 trainer:
   log_step: 50
-  n_epochs: 50
-  epoch_len: 200 # 13100 / 64(batch_size) ≈ 200 steps
+  n_epochs: 400
+  epoch_len: 400 # 13100 / 32(batch_size) ≈ 400 steps
   device_tensors: ["audio", "mel_spectrogram"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
   override: False # if True, will override the previous run with the same name
   monitor: "max MOS" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
-  save_period: 10 # checkpoint each save_period epochs in addition to the best epoch
+  save_period: 20 # checkpoint each save_period epochs in addition to the best epoch
   early_stop: ${trainer.n_epochs} # epochs for early stopping
   save_dir: "saved"
   parallel: False
