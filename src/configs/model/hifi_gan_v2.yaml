@@ -1,4 +1,4 @@
-# HiFi-GAN V1 hyperparameters from original paper
+# HiFi-GAN V2 hyperparameters from original paper
 _target_: src.model.HiFiGAN
 hidden_u: 128
 kernel_u: [16, 16, 4, 4]
