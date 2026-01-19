@@ -28,6 +28,10 @@ python synthesize.py inferencer.from_pretrained={pretrained_model_path}
 
 Where pretrained model can be downloaded from [huggingface](https://huggingface.co/ArthurGaleev/HiFi-GAN-v2/blob/main/HiFi-GAN-v2.3-epoch35.pth).
 
+## Report
+
+Analysis and metrics can be found in [wandb report](https://api.wandb.ai/links/arthur-galeev-hse/4e5jw3mv).
+
 ## Credits
 
 This repository is based on a heavily modified fork of [pytorch-template](https://github.com/victoresque/pytorch-template) and [asr_project_template](https://github.com/WrathOfGrapes/asr_project_template) repositories.
